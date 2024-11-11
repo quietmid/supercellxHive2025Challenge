@@ -44,7 +44,9 @@ void Weapon::update(float deltaTime)
         }
     }
 }
-
+/*
+If i want to implement direction also to the weapons, I need to have an accessor from players to weapons, so in weapon.draw, I can also have the direction of the weapon which I can use switch() and depending on the direction, I can draw the weapon in the correct position.
+*/
 void Weapon::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
     if (m_type == WeaponType::SWORD)

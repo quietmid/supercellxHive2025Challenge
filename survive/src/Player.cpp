@@ -52,6 +52,10 @@ void Player::move(InputData inputData, float deltaTime)
             m_direction = LEFT;
         else if (inputData.m_movingLeft == false && inputData.m_movingRight == true)
             m_direction = RIGHT;
+        else if (inputData.m_movingUp && !inputData.m_movingDown)
+            m_direction = UP;
+        else if (!inputData.m_movingUp && inputData.m_movingDown)
+            m_direction = DOWN;
     }
 }
 
@@ -69,41 +73,102 @@ void Player::attack()
 
 void Player::shootArrow()
 {
-    sf::Vector2f direction = (m_direction == RIGHT) ? sf::Vector2f(1.0f, 0.0f) : sf::Vector2f(-1.0f, 0.0f);
+    sf::Vector2f direction;
+    switch (m_direction)
+    {
+        case RIGHT:
+            direction = sf::Vector2f(1.0f, 0.0f);
+            break;
+        case LEFT:
+            direction = sf::Vector2f(-1.0f, 0.0f);
+            break;
+        case UP:
+            direction = sf::Vector2f(0.0f, -1.0f);
+            break;
+        case DOWN:
+            direction = sf::Vector2f(0.0f, 1.0f);
+            break;
+    }
+
     sf::Vector2f position = getCenter() + direction * (getSize().x / 2.0f);
     m_arrows.push_back(std::make_unique<Arrow>(position, direction));
 }
+
+// void Player::shootArrow()
+// {
+//     sf::Vector2f direction = (m_direction == RIGHT) ? sf::Vector2f(1.0f, 0.0f) : sf::Vector2f(-1.0f, 0.0f);
+//     sf::Vector2f position = getCenter() + direction * (getSize().x / 2.0f);
+//     m_arrows.push_back(std::make_unique<Arrow>(position, direction));
+// }
 
 void Player::update(float deltaTime)
 {
     sf::Vector2f weaponSize = m_pWeapon->getSize();
     sf::Vector2f weaponPosition = getCenter();
-    
-    if (m_pWeapon->getType() == WeaponType::SWORD)
-    {
-        weaponPosition.x -= (m_direction == LEFT ? weaponSize.x : 0.0f);
-        weaponPosition.y -= weaponSize.y / 2.0f;
-    }
-    else if (m_pWeapon->getType() == WeaponType::BOW)
-    {
-        weaponPosition.x += (m_direction == RIGHT ? weaponSize.x / 2.0f : -weaponSize.x / 5.0f);
-        weaponPosition.y -= weaponSize.y / 2.0f;
-    }
 
+    switch (m_direction)
+    {
+        case LEFT:
+            weaponPosition.x -= weaponSize.x;
+            weaponPosition.y -= weaponSize.y / 2.0f;
+            break;
+        case RIGHT:
+            weaponPosition.x += weaponSize.x / 2.0f;
+            weaponPosition.y -= weaponSize.y / 2.0f;
+            break;
+        case UP:
+            weaponPosition.x -= weaponSize.x / 2.0f;
+            weaponPosition.y -= weaponSize.y;
+            break;
+        case DOWN:
+            weaponPosition.x -= weaponSize.x / 2.0f;
+            weaponPosition.y += weaponSize.y / 2.0f;
+            break;
+    }
     m_sprite.setPosition(getPosition());
     m_pWeapon->setPosition(weaponPosition);
     m_pWeapon->update(deltaTime);
-
-    //update arrows
+    // Update arrows
     for (auto& arrow : m_arrows)
     {
         arrow->update(deltaTime);
     }
-    // Remove offscreen arrows
+    // Remove off-screen arrows
     m_arrows.erase(std::remove_if(m_arrows.begin(), m_arrows.end(),
         [](const std::unique_ptr<Arrow>& arrow) { return arrow->isOffScreen(); }),
         m_arrows.end());
 }
+
+// void Player::update(float deltaTime)
+// {
+//     sf::Vector2f weaponSize = m_pWeapon->getSize();
+//     sf::Vector2f weaponPosition = getCenter();
+    
+//     if (m_pWeapon->getType() == WeaponType::SWORD)
+//     {
+//         weaponPosition.x -= (m_direction == LEFT ? weaponSize.x : 0.0f);
+//         weaponPosition.y -= weaponSize.y / 2.0f;
+//     }
+//     else if (m_pWeapon->getType() == WeaponType::BOW)
+//     {
+//         weaponPosition.x += (m_direction == RIGHT ? weaponSize.x / 2.0f : -weaponSize.x / 5.0f);
+//         weaponPosition.y -= weaponSize.y / 2.0f;
+//     }
+
+//     m_sprite.setPosition(getPosition());
+//     m_pWeapon->setPosition(weaponPosition);
+//     m_pWeapon->update(deltaTime);
+
+//     //update arrows
+//     for (auto& arrow : m_arrows)
+//     {
+//         arrow->update(deltaTime);
+//     }
+//     // Remove offscreen arrows
+//     m_arrows.erase(std::remove_if(m_arrows.begin(), m_arrows.end(),
+//         [](const std::unique_ptr<Arrow>& arrow) { return arrow->isOffScreen(); }),
+//         m_arrows.end());
+// }
 
 void Player::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {

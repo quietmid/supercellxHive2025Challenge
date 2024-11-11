@@ -15,7 +15,9 @@ class Arrow;
 enum eDirection
 {
     LEFT,
-    RIGHT
+    RIGHT,
+    UP,
+    DOWN
 };
 
 class Player : public Rectangle
